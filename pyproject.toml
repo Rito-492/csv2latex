@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "csv2latex"
 version = "0.1.0"
-authors = [{name = "Richard Towne", email = "richardtowne8284@gmail.com"}]
+authors = [{name = "r1t0"}]
 description = "A short description"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "GPL"}
 requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GPL License",
 ]
 
 [project.entry-points."console_scripts"]
