@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "csv2latex"
+version = "0.1.0"
+authors = [{name = "Richard Towne", email = "richardtowne8284@gmail.com"}]
+description = "A short description"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.entry-points."console_scripts"]
+csv2latex = "csv2latex.csv2latex:main"
+
+[project.urls]
+Homepage = "https://github.com/Rito-492/csv2latex"
