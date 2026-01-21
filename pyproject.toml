@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "csv2latex"
-version = "0.1.0"
+version = "0.2.0"
 authors = [{name = "r1t0"}]
-description = "A short description"
+description = "Convert CSV files to LaTeX tables, automatically highlighting extreme values."
 readme = "README.md"
 license = {text = "GPL"}
 requires-python = ">=3.6"

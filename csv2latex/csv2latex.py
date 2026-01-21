@@ -1,17 +1,10 @@
-"""
-CSV to LaTeX Table Converter
-将CSV文件转换为LaTeX表格，支持自动高亮最小值和次小值
-"""
-
-import pandas as pd
 import os
 import argparse
-import json
+import pandas as pd
 from typing import Dict, List, Tuple, Optional
 
-__version__ = "1.0.0"
+__version__ = "0.2.0"
 
-# ==================== 工具函数 ====================
 
 def escape_latex(text: str) -> str:
     """
@@ -69,7 +62,7 @@ def find_extreme_values(series: pd.Series,
         
         # 获取唯一值并排序
         unique_values = sorted(numeric_series[valid_indices].unique(), 
-                              reverse=(mode == 'max'))
+                              reverse=(mode == 'max' or mode == 'max-only'))
         
         if len(unique_values) == 0:
             return [], []
@@ -80,6 +73,9 @@ def find_extreme_values(series: pd.Series,
             (numeric_series >= extreme_val - tolerance) & 
             (numeric_series <= extreme_val + tolerance)
         ].index.tolist()
+
+        if mode in ['min-only', 'max-only']:
+            return extreme_indices, []
         
         # 找次极值索引
         second_extreme_indices = []
@@ -113,7 +109,6 @@ def analyze_dataframe(df: pd.DataFrame,
     col_format = {}
     
     for col_idx, col in enumerate(df.columns):
-        # 如果指定了列，只处理指定的列
         if columns is not None and col not in columns:
             continue
             
@@ -227,25 +222,9 @@ def generate_latex_table(df: pd.DataFrame,
     return "\n".join(latex_lines)
 
 
-def load_config(config_file: str) -> dict:
-    """
-    从JSON配置文件加载设置
-    
-    参数:
-        config_file: 配置文件路径
-    返回:
-        配置字典
-    """
-    if not os.path.exists(config_file):
-        raise FileNotFoundError(f"Configure file not found: {config_file}")
-    
-    with open(config_file, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-
 def csv_to_latex(csv_file: str, 
                  tex_file: str,
-                 caption: str = "数据表格",
+                 caption: str = "table of data",
                  label: str = "tab:data",
                  alignment: str = "c",
                  mode: str = "min",
@@ -267,28 +246,28 @@ def csv_to_latex(csv_file: str,
         verbose: 是否打印详细信息
     """
     if not os.path.exists(csv_file):
-        raise FileNotFoundError(f"CSV文件不存在: {csv_file}")
+        raise FileNotFoundError(f"CSV file not found: {csv_file}")
     
     try:
         df = pd.read_csv(csv_file)
     except Exception as e:
-        raise ValueError(f"读取CSV文件失败: {e}")
+        raise ValueError(f"Failed to read CSV file: {e}")
     
     if df.empty:
-        raise ValueError("CSV文件为空")
+        raise ValueError("CSV file is empty")
     
     # 验证列名
     if columns is not None:
         invalid_cols = [col for col in columns if col not in df.columns]
         if invalid_cols:
-            raise ValueError(f"指定的列不存在: {invalid_cols}")
+            raise ValueError(f"Invalid columns: {invalid_cols}")
     
     if verbose:
-        print(f"✓ 成功读取CSV文件: {csv_file}")
-        print(f"✓ 数据维度: {df.shape[0]} 行 × {df.shape[1]} 列")
-        print(f"✓ 高亮模式: {mode}")
+        print(f"✓ Successfully read the CSV file: {csv_file}")
+        print(f"✓ Data dimensions: {df.shape[0]} rows × {df.shape[1]} columns")
+        print(f"✓ Highlighting mode: {mode}")
         if columns:
-            print(f"✓ 处理列: {columns}")
+            print(f"✓ Processing columns: {columns}")
     
     # 分析数据并获取格式化信息
     col_format = analyze_dataframe(df, mode, columns)
@@ -301,11 +280,11 @@ def csv_to_latex(csv_file: str,
         with open(tex_file, 'w', encoding='utf-8') as f:
             f.write(latex_content)
         if verbose:
-            print(f"✓ LaTeX文件已生成: {tex_file}")
+            print(f"✓ LaTeX file has been generated: {tex_file}")
             if use_booktabs:
                 print("  Note: Using booktabs style. Add \\usepackage{booktabs} in your LaTeX preamble if not already included.")
     except Exception as e:
-        raise IOError(f"写入LaTeX文件失败: {e}")
+        raise IOError(f"Failed to write LaTeX file: {e}")
     
     # 打印格式化信息
     if verbose:
@@ -324,19 +303,16 @@ def csv_to_latex(csv_file: str,
             print("  (There is no data column that needs formatting.)")
 
 
-# ==================== 命令行接口 ====================
-
 def main():
-    """命令行入口函数"""
+    
     parser = argparse.ArgumentParser(
-        description='将CSV文件转换为LaTeX表格，自动高亮极值',
+        description='将CSV文件转换为LaTeX表格,自动高亮极值',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
   %(prog)s data.csv output.tex
-  %(prog)s data.csv output.tex --mode max --caption "实验结果"
-  %(prog)s data.csv output.tex --columns "准确率,速度" --booktabs
-  %(prog)s data.csv output.tex --config config.json
+  %(prog)s data.csv output.tex --mode max --caption "experiment result"
+  %(prog)s data.csv output.tex --columns "accuracy,velocity" --booktabs
         """
     )
     
@@ -346,29 +322,16 @@ def main():
     parser.add_argument('--label', default='tab:data', help='表格标签 (默认: tab:data)')
     parser.add_argument('--alignment', choices=['l', 'c', 'r'], default='c', 
                        help='列对齐方式: l=左对齐, c=居中, r=右对齐 (默认: c)')
-    parser.add_argument('--mode', choices=['min', 'max', 'plain'], default='min',
-                       help='高亮模式: min=最小值, max=最大值, plain=无高亮 (默认: min)')
+    parser.add_argument('--mode', choices=['min', 'min-only', 'max', 'max-only', 'plain'], default='min',
+                       help='高亮模式: min=最小值加粗次小值下划线, min-only=仅最小值加粗, max=最大值加粗次大值下划线, max-only=仅最大值加粗, plain=无高亮 (默认: min)')
     parser.add_argument('--columns', help='需要高亮的列名，用逗号分隔 (默认: 所有列)')
     parser.add_argument('--booktabs', action='store_true', help='使用booktabs样式')
-    parser.add_argument('--config', help='从JSON配置文件读取参数')
     parser.add_argument('--quiet', action='store_true', help='静默模式，不输出详细信息')
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
     
     args = parser.parse_args()
+
     
-    # 如果指定了配置文件，从配置文件加载
-    if args.config:
-        try:
-            config = load_config(args.config)
-            # 配置文件中的参数可以被命令行参数覆盖
-            for key, value in config.items():
-                if not hasattr(args, key) or getattr(args, key) is None:
-                    setattr(args, key, value)
-        except Exception as e:
-            print(f"Error: Failed to load config file - {e}")
-            return 1
-    
-    # 处理列名参数
     columns = None
     if args.columns:
         columns = [col.strip() for col in args.columns.split(',')]
@@ -393,3 +356,4 @@ def main():
 
 if __name__ == "__main__":
     exit(main())
+
