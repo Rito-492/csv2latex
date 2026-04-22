@@ -4,19 +4,57 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "csv2latex"
-version = "0.2.0"
-authors = [{name = "r1t0"}]
-description = "Convert CSV files to LaTeX tables, automatically highlighting extreme values."
+dynamic = ["version"]
+authors = [
+    {name = "r1t0", email = "rito@example.com"}
+]
+maintainers = [
+    {name = "r1t0", email = "rito@example.com"}
+]
+description = "Convert CSV files to LaTeX tables with automatic highlighting of extreme values"
 readme = "README.md"
-license = {text = "GPL"}
+license = {text = "GPL-3.0-or-later"}
 requires-python = ">=3.6"
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GPL License",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+    "Topic :: Scientific/Engineering",
+    "Typing :: Typed",
+]
+keywords = ["csv", "latex", "table", "academic", "paper", "formatting"]
+dependencies = [
+    "pandas>=1.0.0",
 ]
 
-[project.entry-points."console_scripts"]
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+]
+
+[project.scripts]
 csv2latex = "csv2latex.csv2latex:main"
 
 [project.urls]
 Homepage = "https://github.com/Rito-492/csv2latex"
+Repository = "https://github.com/Rito-492/csv2latex.git"
+Issues = "https://github.com/Rito-492/csv2latex/issues"
+Changelog = "https://github.com/Rito-492/csv2latex/releases"
+
+[tool.setuptools.dynamic]
+version = {attr = "csv2latex.csv2latex.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["csv2latex*"]

@@ -1,6 +1,20 @@
-
+# Python
 __pycache__/
-
+*.py[cod]
 *.egg-info/
+*.egg
 
-test/
+
+# IDE
+.claude/
+.idea/
+.vscode/
+
+# Project specific
+CLAUDE.md
+
+# Build
+dist/
+build/
+
+tmp/
